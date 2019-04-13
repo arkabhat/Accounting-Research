@@ -10,10 +10,10 @@ from DataClasses import*
 from multiprocessing import Pool
 
 #main script to run data collection of each firm
-downloadIndexFiles('./indexFiles/', 2016, 2017)
+#downloadIndexFiles('./indexFiles/', 2018, 2018)
 firmGroup = CompanyExtraction()
-years = [2016,2017]
-firmGroup.companyList = firmGroup.companyList[0:100]
+years = [2018]
+firmGroup.companyList = firmGroup.companyList[0:50]
 if __name__ == '__main__':
     for year in years:
         #print("Finding and extracting data for " + str(firm.companyName) + "...")

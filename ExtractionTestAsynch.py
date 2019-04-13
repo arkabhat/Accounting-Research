@@ -110,7 +110,7 @@ def extract(data, firmData):
             if "Item 5.02" in entry:
                 difference = []
                 targetInfo = entry.find_all_next()
-                if(len(filing) == 1):
+                if filing.index(entry) == len(filing) -1:
                     for val in targetInfo:
                         string = str(val.string)
                         if(targetInfo.index(val) == 0 or string not in str(targetInfo[targetInfo.index(val)-1].string)):
