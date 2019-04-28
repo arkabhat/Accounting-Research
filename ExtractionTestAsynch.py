@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Mar 30 16:37:15 2019
-
 @author: Arka Bhattacharya
 """
 
@@ -51,9 +50,9 @@ class CompanyExtraction:
             return companyList
         
         #writes the data of each company to a .csv file
-        def writeData(self):
+        def writeData(self, startNum, endNum):
             print("Writing data to .csv file")
-            fileName = "./firmData.csv"
+            fileName = "./" + startNum + "-" + endNum + ".csv"
             dataArray = []
             for firm in self.companyList:
                 for data in firm.data:
@@ -141,5 +140,3 @@ def findData(company, path):
                         
 
     return entries
-
-

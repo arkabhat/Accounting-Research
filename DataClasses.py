@@ -6,7 +6,8 @@ class Company:
         self.data = []
 
     def addData(self, data):
-        self.data += data
+        if data:
+            self.data += data
 
 #Used mainly for testing mechanisms, reperesents the data in association with
 #the company.
