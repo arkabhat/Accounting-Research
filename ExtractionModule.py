@@ -9,11 +9,21 @@ import pandas as pd
 import numpy as np
 import urllib.request as ulib
 from bs4 import BeautifulSoup as soup
+#from nltk.tokenize import word_tokenize
+#from nltk.text import Text
 import lxml
 import re
 import aiohttp
 import asyncio
 import requests
+
+stopping_items = ["Amendments to Articles of Incorporation or Bylaws", 
+                    "Suspension of Trading Under Registrant's Employee Benefit Plans",
+                    "Amendment to Registrant's Code of Ethics",
+                    "Regulation FD Disclosure",
+                    "Other Events",
+                    "Financial Statements and Exhibits",
+                    "SIGNATURE"]
 
 #downloads master index files
 def downloadIndexFiles(folderPath, fromYear, toYear):
@@ -93,54 +103,23 @@ def extract(data, firmData):
     totalList = [] 
     for x in range(len(data)):
         if data[x]:
-            #for each html filing, reduce the amount of html
-            #to be parsed to be between <DOCUMENT> and the 
-            #signatures section
-            entry = data[x].splitlines()
-            endIndex = 0
-            for line in entry:
-                if "Item 5.02" in line:
-                    entry = entry[entry.index(line) : ] 
-                elif "SIGNATURE" in line:
-                    endIndex = entry.index(line)
-                    entry = entry[: endIndex + 1]
-                else:
-                    pass
-            entry = entry[: endIndex + 1]
-            pattern = re.compile("^Item [0-9]\.[0-9][0-9]$")
-            for line in entry:
-                if  pattern.match(line) and "Item 5.02" not in line:
-                    entry = entry[:entry.index(line)]
-
-            #convert the trimmed html into a string form
-            dataStrng = '\n'.join(str(line) for line in entry)
-
-            #parse the trimmed html and find all cases of the following pattern : "Item X.XX"
-            newData = soup(dataStrng, 'lxml')
-            #print(newData)
-            filing = newData.find_all(string = re.compile("^Item [0-9]\.[0-9][0-9]$"))
-            blurb = ""
-            #totalList.append([firmData[x][0], firmData[x][1], newData.text])
-        #return totalList
-            for entry in filing:
-                #If desired item is one of the found pattern matches
-                if "Item 5.02" in entry:
-                    difference = []
-                    targetInfo = entry.find_all_next()
-                    if filing.index(entry) == len(filing) -1:
-                        for val in targetInfo:
-                            string = str(val.string)
-                            if(targetInfo.index(val) == 0 or string not in str(targetInfo[targetInfo.index(val)-1].string)):
-                                difference.append(string)
-                    else:
-                        nextInfo = filing[filing.index(entry) + 1].find_all_next()
-                        for val in targetInfo:
-                            if val not in nextInfo:
-                                string = str(val.string)
-                                if(targetInfo.index(val) == 0 or string not in str(targetInfo[targetInfo.index(val)-1].string)):
-                                    difference.append(string)
-                    blurb += " ".join(str(line) for line in difference)
-                    totalList.append([firmData[x][0], firmData[x][1], blurb])    
+            entry = soup(data[x], 'lxml')
+            allData = entry.text
+            if  "Departure of Directors or Certain Officers; Compensatory Arrangements of Certain Officers" in allData:
+                allData = allData[allData.find("Departure of Directors or Certain Officers; Compensatory Arrangements of Certain Officers"):]
+            else: 
+                allData = ""
+            pattern = re.compile("^Item [0-9]\.[0-9][0-9]")
+            #if pattern.match(allData):
+                #value = pattern.match(allData[8:])
+                #allData = allData[:allData.find(value)]
+            if "SIGNATURE" in allData:
+                allData = allData[:allData.find("SIGNATURE")]
+            for entry in stopping_items:
+                if entry in allData:
+                    allData = allData[:allData.find(entry)]
+            #print(allData)
+            totalList.append([firmData[x][0], firmData[x][1], allData])    
         return totalList
 
 #Finds all the potential urls for filings that are present.
